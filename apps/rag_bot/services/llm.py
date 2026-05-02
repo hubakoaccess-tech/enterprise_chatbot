@@ -2,7 +2,8 @@ import os
 from groq import Groq
 
 def get_client():
-    return Groq(api_key=os.getenv('GROQ_API_KEY'))
+    api_key = os.getenv('GROQ_API_KEY')
+    return Groq(api_key=api_key)
 
 
 def build_prompt(context_chunks, question):

@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-x5$e$fltb5b(10@d5878xrj)k2k*^n&m52lyg99^)kstx_*q@m
 # SECURITY WARNING: don't run with debug turned on in production!
 import os
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['web-production-4e60.up.railway.app', 'localhost', '127.0.0.1']
 
 
 
@@ -155,7 +155,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.railway.app',
-    'https://enterprise-chatbot-1y6x.onrender.com',
+    'https://web-production-4e60.up.railway.app',
     'http://localhost:8000',
+    'http://127.0.0.1:8000',
 ]
