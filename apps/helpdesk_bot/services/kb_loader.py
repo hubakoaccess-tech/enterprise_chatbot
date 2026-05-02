@@ -1,26 +1,21 @@
 import json
-import pickle
 import os
 import numpy as np
 import faiss
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.preprocessing import normalize
 
-# Don't load model at module level — load lazily
-_model = None
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+KB_PATH = os.path.join(BASE_DIR, 'knowledge_base.json')
 
-def get_model():
-    global _model
-    if _model is None:
-        from sentence_transformers import SentenceTransformer
-        _model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
-    return _model
-
-# Paths
-KB_PATH = 'apps/helpdesk_bot/knowledge_base.json'
-CACHE_PATH = 'apps/helpdesk_bot/embeddings_cache.pkl'
+# Global vectorizer and index — built once at first request
+_index = None
+_questions = None
+_answers = None
+_vectorizer = None
 
 
 def load_knowledge_base():
-    """Load all Q&A pairs from JSON file"""
     with open(KB_PATH, 'r') as f:
         data = json.load(f)
 
@@ -35,60 +30,43 @@ def load_knowledge_base():
     return questions, answers
 
 
-def build_or_load_cache():
-    """
-    Build FAISS index from knowledge base
-    Cache it so we don't recompute on every request
-    """
+def build_index():
+    global _index, _questions, _answers, _vectorizer
+
     questions, answers = load_knowledge_base()
 
-    # Check if cache exists and is still valid
-    if os.path.exists(CACHE_PATH):
-        with open(CACHE_PATH, 'rb') as f:
-            cache = pickle.load(f)
-        # If questions haven't changed, use cache
-        if cache['questions'] == questions:
-            return cache['index'], questions, answers
+    vectorizer = TfidfVectorizer(max_features=384)
+    embeddings = vectorizer.fit_transform(questions).toarray()
+    embeddings = normalize(embeddings).astype('float32')
 
-    # Build new embeddings
-    embeddings = get_model().encode(questions)
-    embeddings = np.array(embeddings).astype('float32')
-
-    # Build FAISS index
     dimension = embeddings.shape[1]
     index = faiss.IndexFlatL2(dimension)
     index.add(embeddings)
 
-    # Save cache
-    with open(CACHE_PATH, 'wb') as f:
-        pickle.dump({
-            'index': index,
-            'questions': questions
-        }, f)
-
-    return index, questions, answers
+    _index = index
+    _questions = questions
+    _answers = answers
+    _vectorizer = vectorizer
 
 
 def search_knowledge_base(query, top_k=5):
-    """
-    Find top 5 most relevant Q&A pairs for a user query
-    """
-    index, questions, answers = build_or_load_cache()
+    global _index, _questions, _answers, _vectorizer
 
-    # Convert query to embedding
-    query_embedding = get_model().encode([query])
-    query_embedding = np.array(query_embedding).astype('float32')
+    # Build index on first request
+    if _index is None:
+        build_index()
 
-    # Search FAISS
-    distances, indices = index.search(query_embedding, top_k)
+    query_embedding = _vectorizer.transform([query]).toarray()
+    query_embedding = normalize(query_embedding).astype('float32')
 
-    # Build results
+    distances, indices = _index.search(query_embedding, top_k)
+
     results = []
     for idx in indices[0]:
-        if idx < len(questions):
+        if idx < len(_questions):
             results.append({
-                'question': questions[idx],
-                'answer': answers[idx]
+                'question': _questions[idx],
+                'answer': _answers[idx]
             })
 
     return results
