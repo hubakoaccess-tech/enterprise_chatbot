@@ -6,7 +6,7 @@ gunicorn==21.2.0
 whitenoise==6.6.0
 groq==0.4.2
 sentence-transformers==2.2.2
-faiss-cpu==1.7.4
+faiss-cpu==1.13.2
 numpy==1.24.3
 beautifulsoup4==4.12.2
 requests==2.31.0
