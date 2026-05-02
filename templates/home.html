@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+
+{% block title %}WiseNeuron — Enterprise Chatbot{% endblock %}
+
+{% block content %}
+
+<!-- Tab Switcher -->
+<div class="flex gap-2 mb-6">
+    <button onclick="switchTab('rag')"
+        id="tab-rag"
+        class="px-6 py-2 rounded-lg font-semibold bg-blue-600 text-white transition-all">
+        📄 RAG ChatBot
+    </button>
+    <button onclick="switchTab('helpdesk')"
+        id="tab-helpdesk"
+        class="px-6 py-2 rounded-lg font-semibold bg-gray-700 text-gray-300 transition-all">
+        🏢 HelpDesk Bot
+    </button>
+</div>
+
+<!-- RAG Bot Panel -->
+<div id="panel-rag" class="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+    <h2 class="text-lg font-bold mb-4 text-blue-400">📄 RAG ChatBot</h2>
+
+    <!-- Input Type Selector -->
+    <div class="flex gap-2 mb-4 flex-wrap">
+        <button onclick="setInputType('pdf')" id="btn-pdf"
+            class="px-3 py-1 rounded-lg text-sm bg-blue-600 text-white">📄 PDF</button>
+        <button onclick="setInputType('docx')" id="btn-docx"
+            class="px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-300">📝 DOCX</button>
+        <button onclick="setInputType('txt')" id="btn-txt"
+            class="px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-300">📃 TXT</button>
+        <button onclick="setInputType('url')" id="btn-url"
+            class="px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-300">🌐 URL</button>
+        <button onclick="setInputType('youtube')" id="btn-youtube"
+            class="px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-300">▶️ YouTube</button>
+    </div>
+
+    <!-- File Upload Area -->
+    <div id="file-upload-area" class="mb-4">
+        <input type="file" id="file-input"
+            class="w-full bg-gray-800 text-gray-300 rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:border-blue-500">
+    </div>
+
+    <!-- URL Input Area (hidden by default) -->
+    <div id="url-input-area" class="mb-4 hidden">
+        <input type="text" id="url-input" placeholder="Enter URL or YouTube link..."
+            class="w-full bg-gray-800 text-gray-300 rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:border-blue-500">
+    </div>
+
+    <!-- Process Button -->
+    <button onclick="processDocument()"
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg mb-4 transition-all">
+        ⚡ Process Document
+    </button>
+
+    <!-- Status Message -->
+    <div id="upload-status" class="hidden mb-4 px-4 py-3 rounded-lg text-sm"></div>
+
+    <!-- Chat Window -->
+    <div id="rag-chat-window"
+        class="h-80 overflow-y-auto bg-gray-950 rounded-xl p-4 mb-4 border border-gray-800 flex flex-col gap-3">
+        <div class="text-gray-500 text-sm text-center mt-auto">
+            Upload a document above and start asking questions 💬
+        </div>
+    </div>
+
+    <!-- Chat Input -->
+    <div class="flex gap-2">
+        <input type="text" id="rag-input"
+            placeholder="Ask anything about your document..."
+            class="flex-1 bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:border-blue-500"
+            onkeypress="if(event.key==='Enter') sendRagMessage()">
+        <button onclick="sendRagMessage()"
+            class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-all">
+            Send
+        </button>
+    </div>
+</div>
+
+<!-- HelpDesk Bot Panel -->
+<div id="panel-helpdesk" class="bg-gray-900 rounded-2xl p-6 border border-gray-800 hidden">
+    <h2 class="text-lg font-bold mb-4 text-green-400">🏢 HelpDesk Bot</h2>
+
+    <!-- Quick Question Buttons -->
+    <div class="flex gap-2 mb-4 flex-wrap">
+        <button onclick="askQuick('How many sick leaves do I get?')"
+            class="px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-300 hover:bg-green-700 hover:text-white transition-all">
+            🏥 Sick Leave
+        </button>
+        <button onclick="askQuick('How do I reset my password?')"
+            class="px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-300 hover:bg-green-700 hover:text-white transition-all">
+            🔑 Password Reset
+        </button>
+        <button onclick="askQuick('What is the work from home policy?')"
+            class="px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-300 hover:bg-green-700 hover:text-white transition-all">
+            🏠 Work From Home
+        </button>
+        <button onclick="askQuick('What is the dress code policy?')"
+            class="px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-300 hover:bg-green-700 hover:text-white transition-all">
+            👔 Dress Code
+        </button>
+        <button onclick="askQuick('When is the next town hall?')"
+            class="px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-300 hover:bg-green-700 hover:text-white transition-all">
+            📅 Town Hall
+        </button>
+    </div>
+
+    <!-- Chat Window -->
+    <div id="helpdesk-chat-window"
+        class="h-80 overflow-y-auto bg-gray-950 rounded-xl p-4 mb-4 border border-gray-800 flex flex-col gap-3">
+        <div class="text-gray-500 text-sm text-center mt-auto">
+            Ask me anything about HR policies, IT support, or company events 💬
+        </div>
+    </div>
+
+    <!-- Chat Input -->
+    <div class="flex gap-2">
+        <input type="text" id="helpdesk-input"
+            placeholder="Ask about leave policy, IT help, company events..."
+            class="flex-1 bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:border-green-500"
+            onkeypress="if(event.key==='Enter') sendHelpdeskMessage()">
+        <button onclick="sendHelpdeskMessage()"
+            class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition-all">
+            Send
+        </button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    var currentInputType = 'pdf'
+    var documentProcessed = false
+
+    // ── Tab switching ──────────────────────────────────────
+    function switchTab(tab) {
+        document.getElementById('panel-rag').classList.add('hidden')
+        document.getElementById('panel-helpdesk').classList.add('hidden')
+        document.getElementById('tab-rag').className = 'px-6 py-2 rounded-lg font-semibold bg-gray-700 text-gray-300 transition-all'
+        document.getElementById('tab-helpdesk').className = 'px-6 py-2 rounded-lg font-semibold bg-gray-700 text-gray-300 transition-all'
+        document.getElementById('panel-' + tab).classList.remove('hidden')
+        if (tab === 'rag') {
+            document.getElementById('tab-rag').className = 'px-6 py-2 rounded-lg font-semibold bg-blue-600 text-white transition-all'
+        } else {
+            document.getElementById('tab-helpdesk').className = 'px-6 py-2 rounded-lg font-semibold bg-green-600 text-white transition-all'
+        }
+    }
+
+    // ── Input type switching ───────────────────────────────
+    function setInputType(type) {
+        currentInputType = type
+
+        // Reset all buttons one by one
+        document.getElementById('btn-pdf').className = 'px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-300'
+        document.getElementById('btn-docx').className = 'px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-300'
+        document.getElementById('btn-txt').className = 'px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-300'
+        document.getElementById('btn-url').className = 'px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-300'
+        document.getElementById('btn-youtube').className = 'px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-300'
+
+        // Highlight selected button
+        document.getElementById('btn-' + type).className = 'px-3 py-1 rounded-lg text-sm bg-blue-600 text-white'
+
+        // Show correct input area
+        if (type === 'url' || type === 'youtube') {
+            document.getElementById('file-upload-area').classList.add('hidden')
+            document.getElementById('url-input-area').classList.remove('hidden')
+            if (type === 'youtube') {
+                document.getElementById('url-input').placeholder = 'Enter YouTube URL...'
+            } else {
+                document.getElementById('url-input').placeholder = 'Enter webpage URL...'
+            }
+        } else {
+            document.getElementById('file-upload-area').classList.remove('hidden')
+            document.getElementById('url-input-area').classList.add('hidden')
+        }
+    }
+
+    // ── Show status message ────────────────────────────────
+    function showStatus(message, type) {
+        var el = document.getElementById('upload-status')
+        el.classList.remove('hidden', 'bg-green-900', 'bg-red-900', 'bg-blue-900', 'text-green-300', 'text-red-300', 'text-blue-300')
+        if (type === 'success') {
+            el.classList.add('bg-green-900', 'text-green-300')
+        } else if (type === 'error') {
+            el.classList.add('bg-red-900', 'text-red-300')
+        } else {
+            el.classList.add('bg-blue-900', 'text-blue-300')
+        }
+        el.textContent = message
+    }
+
+    // ── Process document ───────────────────────────────────
+    async function processDocument() {
+        showStatus('⏳ Processing document... please wait', 'info')
+
+        var formData = new FormData()
+        formData.append('input_type', currentInputType)
+
+        if (currentInputType === 'url' || currentInputType === 'youtube') {
+            var url = document.getElementById('url-input').value.trim()
+            if (!url) {
+                showStatus('Please enter a URL', 'error')
+                return
+            }
+            formData.append('url', url)
+        } else {
+            var file = document.getElementById('file-input').files[0]
+            if (!file) {
+                showStatus('Please select a file', 'error')
+                return
+            }
+            formData.append('file', file)
+        }
+
+        try {
+            var response = await fetch('/api/rag/upload/', {
+                method: 'POST',
+                body: formData
+            })
+            var data = await response.json()
+
+            if (data.status === 'success') {
+                documentProcessed = true
+                showStatus('✅ Document processed! ' + data.chunks_count + ' chunks ready.', 'success')
+                addMessage('rag', 'bot', '✅ Document ready! Ask me anything about it.')
+            } else {
+                showStatus('❌ ' + (data.error || 'Something went wrong'), 'error')
+            }
+        } catch (err) {
+            showStatus('❌ Network error: ' + err.message, 'error')
+        }
+    }
+
+    // ── Add message bubble to chat ─────────────────────────
+    function addMessage(bot, sender, text) {
+        var chatWindow = document.getElementById(bot + '-chat-window')
+
+        // Clear placeholder
+        var placeholder = chatWindow.querySelector('.text-gray-500')
+        if (placeholder) placeholder.remove()
+
+        var bubble = document.createElement('div')
+        if (sender === 'user') {
+            bubble.className = 'self-end bg-blue-600 text-white px-4 py-2 rounded-2xl rounded-br-sm max-w-xs text-sm'
+        } else {
+            bubble.className = 'self-start bg-gray-800 text-gray-100 px-4 py-2 rounded-2xl rounded-bl-sm max-w-lg text-sm'
+        }
+        bubble.textContent = text
+        chatWindow.appendChild(bubble)
+        chatWindow.scrollTop = chatWindow.scrollHeight
+    }
+
+    // ── Send RAG message ───────────────────────────────────
+    async function sendRagMessage() {
+        var input = document.getElementById('rag-input')
+        var question = input.value.trim()
+        if (!question) return
+
+        if (!documentProcessed) {
+            addMessage('rag', 'bot', '⚠️ Please upload and process a document first.')
+            return
+        }
+
+        addMessage('rag', 'user', question)
+        input.value = ''
+        addMessage('rag', 'bot', '⏳ Thinking...')
+
+        try {
+            var response = await fetch('/api/rag/chat/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: question })
+            })
+            var data = await response.json()
+
+            // Remove thinking bubble
+            var chatWindow = document.getElementById('rag-chat-window')
+            chatWindow.lastChild.remove()
+
+            addMessage('rag', 'bot', data.answer || data.error)
+        } catch (err) {
+            addMessage('rag', 'bot', '❌ Network error: ' + err.message)
+        }
+    }
+    // ── Quick question buttons ─────────────────────────────
+    function askQuick(question) {
+        document.getElementById('helpdesk-input').value = question
+        sendHelpdeskMessage()
+    }
+
+    // ── Send HelpDesk message ──────────────────────────────
+    async function sendHelpdeskMessage() {
+        var input = document.getElementById('helpdesk-input')
+        var question = input.value.trim()
+        if (!question) return
+
+        addMessage('helpdesk', 'user', question)
+        input.value = ''
+        addMessage('helpdesk', 'bot', '⏳ Checking company policies...')
+
+        try {
+            var response = await fetch('/api/helpdesk/chat/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: question })
+            })
+            var data = await response.json()
+
+            // Remove thinking bubble
+            var chatWindow = document.getElementById('helpdesk-chat-window')
+            chatWindow.lastChild.remove()
+
+            addMessage('helpdesk', 'bot', data.answer || data.error)
+        } catch (err) {
+            addMessage('helpdesk', 'bot', '❌ Network error: ' + err.message)
+        }
+    }
+</script>
+{% endblock %}

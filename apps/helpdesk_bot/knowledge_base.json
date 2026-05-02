@@ -1,0 +1,88 @@
+{
+    "knowledge_base": [
+        {
+            "category": "HR Benefits",
+            "entries": [
+                {
+                    "question": "How many sick leaves do I get?",
+                    "answer": "Employees are entitled to 12 sick leaves per year. Unused sick leaves cannot be carried forward to the next year."
+                },
+                {
+                    "question": "What is the maternity leave policy?",
+                    "answer": "Maternity leave is granted for 26 weeks. Additional provisions are available for high-risk pregnancies with a doctor's certificate."
+                },
+                {
+                    "question": "How many casual leaves do I get?",
+                    "answer": "Employees get 15 casual leaves per year. Up to 5 unused casual leaves can be carried forward to the next year."
+                },
+                {
+                    "question": "What is the work from home policy?",
+                    "answer": "Employees can work from home up to 2 days per week with manager approval. Full remote work requires HR and department head approval."
+                },
+                {
+                    "question": "How do I apply for leave?",
+                    "answer": "Login to the HR portal, go to Leave Management, select leave type and dates, and submit for manager approval. Apply at least 2 days in advance for planned leaves."
+                }
+            ]
+        },
+        {
+            "category": "IT Support",
+            "entries": [
+                {
+                    "question": "How do I reset my password?",
+                    "answer": "Go to the IT support portal, click Forgot Password, enter your company email and follow the instructions sent to your registered email."
+                },
+                {
+                    "question": "How do I install company software?",
+                    "answer": "Open the Software Center on your device, search for the required software and click Install. For unlisted software, raise an IT support ticket."
+                },
+                {
+                    "question": "What should I do if my computer won't start?",
+                    "answer": "Check if the power cable is properly connected. Press the power button for 10 seconds, wait and try restarting. If the issue persists contact IT support immediately."
+                },
+                {
+                    "question": "How do I connect to company VPN?",
+                    "answer": "Download the VPN client from the IT portal, install it, enter your employee credentials and select the nearest server. Contact IT if you face connection issues."
+                },
+                {
+                    "question": "How do I report a technical issue?",
+                    "answer": "Raise a ticket on the IT support portal with a detailed description of the issue. For urgent issues call the IT helpdesk at extension 1234."
+                }
+            ]
+        },
+        {
+            "category": "Company Policies",
+            "entries": [
+                {
+                    "question": "What is the code of conduct?",
+                    "answer": "Employees must maintain professional behavior, respect colleagues, protect company data, and comply with all company policies. Violations may result in disciplinary action."
+                },
+                {
+                    "question": "How do I report a policy violation?",
+                    "answer": "Report violations through the HR portal under the Compliance section or contact the compliance officer directly at compliance@company.com."
+                },
+                {
+                    "question": "What is the office timing?",
+                    "answer": "Standard office hours are 9 AM to 6 PM Monday to Friday. Flexible timing of plus or minus 1 hour is allowed with manager approval."
+                },
+                {
+                    "question": "What is the dress code policy?",
+                    "answer": "Business casual attire is required Monday to Thursday. Fridays are casual dress days. Client meeting days require formal business attire."
+                }
+            ]
+        },
+        {
+            "category": "Company Events",
+            "entries": [
+                {
+                    "question": "When is the next town hall?",
+                    "answer": "Town halls are held every quarter. The next town hall is scheduled for the last Friday of this month. Check the company calendar for exact timing."
+                },
+                {
+                    "question": "How do I register for company events?",
+                    "answer": "Visit the company intranet Events section, browse upcoming events and click Register. You will receive a confirmation email with event details."
+                }
+            ]
+        }
+    ]
+}
