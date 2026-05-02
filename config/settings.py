@@ -156,6 +156,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 CSRF_TRUSTED_ORIGINS = [
     'https://*.railway.app',
+    'https://enterprise-chatbot-1y6x.onrender.com',
     'http://localhost:8000',
-    'http://127.0.0.1:8000',
 ]

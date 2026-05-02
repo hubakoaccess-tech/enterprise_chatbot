@@ -1,7 +1,8 @@
 import os
 from groq import Groq
 
-client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+def get_client():
+    return Groq(api_key=os.getenv('GROQ_API_KEY'))
 
 
 def get_helpdesk_response(query, relevant_qas):
@@ -33,7 +34,7 @@ INSTRUCTIONS:
 
 YOUR RESPONSE:"""
 
-        response = client.chat.completions.create(
+        response = get_client().chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {

@@ -1,8 +1,8 @@
 import os
 from groq import Groq
 
-# Initialize Groq client once
-client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+def get_client():
+    return Groq(api_key=os.getenv('GROQ_API_KEY'))
 
 
 def build_prompt(context_chunks, question):
@@ -37,7 +37,7 @@ def get_rag_response(context_chunks, question):
     try:
         prompt = build_prompt(context_chunks, question)
 
-        response = client.chat.completions.create(
+        response = get_client().chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {
