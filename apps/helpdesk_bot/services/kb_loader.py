@@ -3,10 +3,16 @@ import pickle
 import os
 import numpy as np
 import faiss
-from sentence_transformers import SentenceTransformer
 
-# Load model once
-model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
+# Don't load model at module level — load lazily
+_model = None
+
+def get_model():
+    global _model
+    if _model is None:
+        from sentence_transformers import SentenceTransformer
+        _model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
+    return _model
 
 # Paths
 KB_PATH = 'apps/helpdesk_bot/knowledge_base.json'
@@ -45,7 +51,7 @@ def build_or_load_cache():
             return cache['index'], questions, answers
 
     # Build new embeddings
-    embeddings = model.encode(questions)
+    embeddings = get_model().encode(questions)
     embeddings = np.array(embeddings).astype('float32')
 
     # Build FAISS index
@@ -70,7 +76,7 @@ def search_knowledge_base(query, top_k=5):
     index, questions, answers = build_or_load_cache()
 
     # Convert query to embedding
-    query_embedding = model.encode([query])
+    query_embedding = get_model().encode([query])
     query_embedding = np.array(query_embedding).astype('float32')
 
     # Search FAISS
