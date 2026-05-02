@@ -6,7 +6,7 @@ import faiss
 from sentence_transformers import SentenceTransformer
 
 # Load model once
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
 
 # Paths
 KB_PATH = 'apps/helpdesk_bot/knowledge_base.json'
