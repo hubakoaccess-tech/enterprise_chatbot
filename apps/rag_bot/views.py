@@ -36,8 +36,7 @@ def upload_document(request):
             if not uploaded_file:
                 return JsonResponse({'error': 'No file provided'}, status=400)
 
-            file_path = f'media/{uploaded_file.name}'
-            os.makedirs('media', exist_ok=True)
+            file_path = f'/tmp/{uploaded_file.name}'
             with open(file_path, 'wb') as f:
                 for chunk in uploaded_file.chunks():
                     f.write(chunk)
@@ -53,7 +52,6 @@ def upload_document(request):
         if not text:
             return JsonResponse({'error': 'Could not extract text'}, status=400)
 
-        # Build vector store — now returns vectorizer too
         index, chunks, vectorizer = build_vector_store(text)
         document_store[session_id] = (index, chunks, vectorizer)
 
@@ -64,7 +62,11 @@ def upload_document(request):
         })
 
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        import traceback
+        return JsonResponse({
+            'error': str(e),
+            'detail': traceback.format_exc()
+        }, status=500)
 
 
 @csrf_exempt
