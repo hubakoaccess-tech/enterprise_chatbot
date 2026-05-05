@@ -192,47 +192,46 @@
     }
 
     // ── Process document ───────────────────────────────────
-    async function processDocument() {
-        showStatus('⏳ Processing document... please wait', 'info')
+async function processDocument() {
+    showStatus('⏳ Processing document... please wait', 'info');
+    var formData = new FormData();
+    formData.append('input_type', currentInputType);
 
-        var formData = new FormData()
-        formData.append('input_type', currentInputType)
-
-        if (currentInputType === 'url' || currentInputType === 'youtube') {
-            var url = document.getElementById('url-input').value.trim()
-            if (!url) {
-                showStatus('Please enter a URL', 'error')
-                return
-            }
-            formData.append('url', url)
-        } else {
-            var file = document.getElementById('file-input').files[0]
-            if (!file) {
-                showStatus('Please select a file', 'error')
-                return
-            }
-            formData.append('file', file)
-        }
-
-        try {
-            const response = await fetch('https://web-production-4e60.up.railway.app/api/rag/upload/', {
-
-                method: 'POST',
-                body: formData
-            })
-            var data = await response.json()
-
-            if (data.status === 'success') {
-                documentProcessed = true
-                showStatus('✅ Document processed! ' + data.chunks_count + ' chunks ready.', 'success')
-                addMessage('rag', 'bot', '✅ Document ready! Ask me anything about it.')
-            } else {
-                showStatus('❌ ' + (data.error || 'Something went wrong'), 'error')
-            }
-        } catch (err) {
-            showStatus('❌ Network error: ' + err.message, 'error')
-        }
+    if (currentInputType === 'url' || currentInputType === 'youtube') {
+        var url = document.getElementById('url-input').value.trim();
+        if (!url) { showStatus('Please enter a URL', 'error'); return; }
+        formData.append('url', url);
+    } else {
+        var file = document.getElementById('file-input').files[0];
+        if (!file) { showStatus('Please select a file', 'error'); return; }
+        formData.append('file', file);
     }
+
+    try {
+        // FIX: Use relative URL instead of hardcoded domain
+        const response = await fetch('/api/rag/upload/', {
+            method: 'POST',
+            body: formData
+        });
+        
+        // Handle non-JSON responses (prevents "Unexpected token <" error)
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: "Server Error " + response.status }));
+            throw new Error(errorData.error || "Server Error");
+        }
+
+        var data = await response.json();
+        if (data.status === 'success') {
+            documentProcessed = true;
+            showStatus('✅ Document processed! ' + data.chunks_count + ' chunks ready.', 'success');
+            addMessage('rag', 'bot', '✅ Document ready! Ask me anything about it.');
+        } else {
+            showStatus('❌ ' + (data.error || 'Something went wrong'), 'error');
+        }
+    } catch (err) {
+        showStatus('❌ ' + err.message, 'error');
+    }
+}
 
     // ── Add message bubble to chat ─────────────────────────
     function addMessage(bot, sender, text) {
@@ -255,35 +254,38 @@
 
     // ── Send RAG message ───────────────────────────────────
     async function sendRagMessage() {
-        var input = document.getElementById('rag-input')
-        var question = input.value.trim()
-        if (!question) return
+    var input = document.getElementById('rag-input');
+    var question = input.value.trim();
+    if (!question) return;
 
-        if (!documentProcessed) {
-            addMessage('rag', 'bot', '⚠️ Please upload and process a document first.')
-            return
-        }
-
-        addMessage('rag', 'user', question)
-        input.value = ''
-        addMessage('rag', 'bot', '⏳ Thinking...')
-
-        try {
-            var response = await fetch('https://web-production-4e60.up.railway.app/api/helpdesk/chat/', {                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question: question })
-            })
-            var data = await response.json()
-
-            // Remove thinking bubble
-            var chatWindow = document.getElementById('rag-chat-window')
-            chatWindow.lastChild.remove()
-
-            addMessage('rag', 'bot', data.answer || data.error)
-        } catch (err) {
-            addMessage('rag', 'bot', '❌ Network error: ' + err.message)
-        }
+    if (!documentProcessed) {
+        addMessage('rag', 'bot', '⚠️ Please upload and process a document first.');
+        return;
     }
+
+    addMessage('rag', 'user', question);
+    input.value = '';
+    addMessage('rag', 'bot', '⏳ Thinking...');
+
+    try {
+        // FIX: Point to the CORRECT endpoint (/api/rag/chat/ NOT helpdesk)
+        var response = await fetch('/api/rag/chat/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: question })
+        });
+        
+        var data = await response.json();
+        var chatWindow = document.getElementById('rag-chat-window');
+        if (chatWindow.lastChild) chatWindow.lastChild.remove();
+
+        addMessage('rag', 'bot', data.answer || data.error);
+    } catch (err) {
+        var chatWindow = document.getElementById('rag-chat-window');
+        if (chatWindow.lastChild) chatWindow.lastChild.remove();
+        addMessage('rag', 'bot', '❌ Network error: ' + err.message);
+    }
+}
     // ── Quick question buttons ─────────────────────────────
     function askQuick(question) {
         document.getElementById('helpdesk-input').value = question

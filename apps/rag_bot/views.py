@@ -22,10 +22,10 @@ def upload_document(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'POST request required'}, status=405)
 
-    session_id = request.session.session_key
-    if not session_id:
+    # FIX: Ensure session exists and is saved
+    if not request.session.session_key:
         request.session.create()
-        session_id = request.session.session_key
+    session_id = request.session.session_key
 
     try:
         input_type = request.POST.get('input_type', 'pdf')
@@ -53,20 +53,16 @@ def upload_document(request):
             return JsonResponse({'error': 'Could not extract text'}, status=400)
 
         index, chunks, vectorizer = build_vector_store(text)
-        document_store[session_id] = (index, chunks, vectorizer)
-
-        return JsonResponse({
-            'status': 'success',
-            'message': 'Document processed successfully',
-            'chunks_count': len(chunks)
-        })
-
-    except Exception as e:
-        import traceback
-        return JsonResponse({
-            'error': str(e),
-            'detail': traceback.format_exc()
-        }, status=500)
+    document_store[session_id] = (index, chunks, vectorizer)
+    
+    # FIX: Force session save to persist across requests
+    request.session.modified = True 
+    
+    return JsonResponse({
+        'status': 'success',
+        'message': 'Document processed successfully',
+        'chunks_count': len(chunks)
+    })
 
 
 @csrf_exempt
