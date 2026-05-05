@@ -9,7 +9,6 @@ from .services.preprocessor import preprocess
 from .services.embedder import build_vector_store, search_similar_chunks
 from .services.llm import get_rag_response
 
-# Store index, chunks AND vectorizer per session
 document_store = {}
 
 
@@ -22,7 +21,6 @@ def upload_document(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'POST request required'}, status=405)
 
-    # FIX: Ensure session exists and is saved
     if not request.session.session_key:
         request.session.create()
     session_id = request.session.session_key
@@ -53,16 +51,17 @@ def upload_document(request):
             return JsonResponse({'error': 'Could not extract text'}, status=400)
 
         index, chunks, vectorizer = build_vector_store(text)
-    document_store[session_id] = (index, chunks, vectorizer)
-    
-    # FIX: Force session save to persist across requests
-    request.session.modified = True 
-    
-    return JsonResponse({
-        'status': 'success',
-        'message': 'Document processed successfully',
-        'chunks_count': len(chunks)
-    })
+        document_store[session_id] = (index, chunks, vectorizer)
+        request.session.modified = True
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Document processed successfully',
+            'chunks_count': len(chunks)
+        })
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 @csrf_exempt
@@ -87,7 +86,6 @@ def rag_chat(request):
                 'answer': 'Please use appropriate language to ask your question.'
             })
 
-        # Now unpack 3 values
         index, chunks, vectorizer = document_store[session_id]
         relevant_chunks = search_similar_chunks(question, index, chunks, vectorizer)
         answer = get_rag_response(relevant_chunks, question)

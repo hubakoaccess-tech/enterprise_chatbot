@@ -1,14 +1,23 @@
 import json
 import os
+import faiss
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.preprocessing import normalize
 from django.conf import settings
 
-# FIX: Use settings.BASE_DIR to ensure the file is found on Railway/Production
 KB_PATH = os.path.join(settings.BASE_DIR, 'apps', 'helpdesk_bot', 'knowledge_base.json')
+
+_index = None
+_questions = []
+_answers = []
+_vectorizer = None
+
 
 def load_knowledge_base():
     if not os.path.exists(KB_PATH):
         raise FileNotFoundError(f"Knowledge base file not found at {KB_PATH}")
-    
+
     with open(KB_PATH, 'r') as f:
         data = json.load(f)
 
@@ -45,7 +54,6 @@ def build_index():
 def search_knowledge_base(query, top_k=5):
     global _index, _questions, _answers, _vectorizer
 
-    # Build index on first request
     if _index is None:
         build_index()
 
