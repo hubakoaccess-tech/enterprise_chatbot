@@ -1,1 +1,1 @@
-web: gunicorn config.wsgi:application --timeout 120 --workers 1 --worker-class sync
+web: python manage.py migrate --run-syncdb && gunicorn config.wsgi:application --timeout 120 --workers 1 --worker-class sync
